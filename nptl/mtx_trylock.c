@@ -17,10 +17,14 @@
    <https://www.gnu.org/licenses/>.  */
 
 #include "thrd_priv.h"
+#include "cilk_structs.h"
 
 int
 mtx_trylock (mtx_t *mutex)
 {
-  int err_code = __pthread_mutex_trylock ((pthread_mutex_t *) mutex);
+  int err_code;
+  if (!is_cilk_worker())
+    err_code = __pthread_mutex_trylock ((pthread_mutex_t *) mutex);
+  else err_code = cilk_pthread_mutex_trylock ((pthread_mutex_t *) mutex);
   return thrd_err_map (err_code);
 }

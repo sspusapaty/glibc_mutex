@@ -17,11 +17,21 @@
    <https://www.gnu.org/licenses/>.  */
 
 #include "thrd_priv.h"
+#include "cilk_structs.h"
 
 int
 cnd_wait (cnd_t *cond, mtx_t *mutex)
 {
-  int err_code = __pthread_cond_wait ((pthread_cond_t *) cond,
+  int err_code;
+
+  if (!is_cilk_worker()) {
+    err_code = __pthread_cond_wait ((pthread_cond_t *) cond,
 				      (pthread_mutex_t *) mutex);
+  } else {
+    err_code = cilk_pthread_cond_wait ((pthread_cond_t *) cond,
+				      (pthread_mutex_t *) mutex);
+
+  }
+  
   return thrd_err_map (err_code);
 }
